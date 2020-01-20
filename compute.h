@@ -1,0 +1,148 @@
+#pragma once
+
+#include <vector>
+#include <fstream>
+#include <thread>
+#include "gmp.h"
+#include "config.h"
+#include "list.h"
+using namespace std;
+
+long current_n;
+bool stopQ;
+
+void report_n(string title) {
+    while(stopQ == 0) {
+        this_thread::sleep_for(chrono::seconds(1));
+        cout << "(calculating: " << current_n << " | " << (double) current_n/ PARAMETER_T  * 100.0 << "\%)            \r" ;
+        cout << title << flush;
+    }
+}
+
+double compute_ax(double x) {
+    // calculate
+    // \sum_{n=s}^t \frac{x^n}{n^2}
+    mpq_t sq; // partial sum
+    mpq_t xq; // x
+    mpq_t xnq; // x^n
+    mpq_t nq; // n
+    mpq_t n2q; // n^2 
+    mpq_t enq; // entry
+    mpq_t oneq; // 1
+    mpq_inits(sq, xq, xnq, nq, n2q, enq, oneq, NULL);
+
+    mpq_set_d(xq, x);
+    mpq_set_ui(xnq, 1, 1);
+    mpq_set_ui(oneq, 1, 1);
+    mpq_set_ui(nq, PARAMETER_S, 1);
+    mpq_init(sq);
+
+    for(long n = 1; n <= PARAMETER_S; n++) {
+        mpq_mul(xnq, xnq, xq);
+    }
+    string title = "a(" + to_string(x) + ") = ";
+    current_n = 0;
+    stopQ = 0;
+    thread th(report_n, title);
+    for(long n = PARAMETER_S; n <= PARAMETER_T; n++) {
+        current_n = n;
+        mpq_mul(n2q, nq, nq); // n^2
+        mpq_div(enq, xnq, n2q); // x^n/n^2
+        mpq_add(sq, sq, enq); // add to the partial sum
+
+        mpq_add(nq, nq, oneq); // n
+        mpq_mul(xnq, xnq, xq); // x^n
+    }
+    stopQ = 1;
+    th.join();
+
+    double ax;
+    ax = mpq_get_d(sq);
+    mpq_clears(sq, xq,xnq,nq,n2q,enq,oneq,NULL);
+    cout << ax << WHITESPACE << endl;
+    return ax;
+}
+
+double compute_bx(double x) {
+    // calculate
+    // \sum_{n=s}^t \frac{x^n}{n}
+    mpq_t sq; // partial sum
+    mpq_t xq; // x
+    mpq_t xnq; // x^n
+    mpq_t nq; // n
+    mpq_t enq; // entry
+    mpq_t oneq; // 1
+    mpq_inits(sq, xq, xnq, nq, enq, oneq, NULL);
+
+    mpq_set_d(xq, x);
+    mpq_set_ui(xnq, 1, 1);
+    mpq_set_ui(oneq, 1, 1);
+    mpq_set_ui(nq, PARAMETER_S, 1);
+    mpq_init(sq);
+
+    for(long n = 1; n <= PARAMETER_S; n++) {
+        mpq_mul(xnq, xnq, xq);
+    }
+    string title = "b(" + to_string(x) + ") = ";
+    current_n = 0;
+    stopQ = 0;
+    thread th(report_n, title);
+    for(long n = PARAMETER_S; n <= PARAMETER_T; n++) {
+        current_n = n;
+        mpq_div(enq, xnq, nq); // x^n/n
+        mpq_add(sq, sq, enq); // add to the partial sum
+
+        mpq_add(nq, nq, oneq); // n
+        mpq_mul(xnq, xnq, xq); // x^n
+    }
+    stopQ = 1;
+    th.join();
+
+    double bx;
+    bx = mpq_get_d(sq);
+    mpq_clears(sq, xq,xnq,nq,enq,oneq,NULL);
+    cout << bx << WHITESPACE << endl;
+    return bx;
+}
+
+void compute_axlist() {
+    vector<double> lambda;
+    vector<double> ax;
+    list_read(lambda, LAMBDA_FILE);
+    ifstream ifs;
+    ifs.open(AX_FILE);
+    if(ifs.fail()) {
+        // check whether ax.list exists
+        ifs.close();
+    } else {
+        ifs.close();
+        list_read(ax, AX_FILE);
+    }
+    for(int k = ax.size(); k<lambda.size(); k++ ) {
+        // cout << k << endl;
+        // cout << lambda[k] << endl;
+        ax.push_back(compute_ax(lambda[k]));
+    }
+    list_write(ax, AX_FILE);
+    return;
+}
+
+void compute_bxlist() {
+    vector<double> lambda;
+    vector<double> bx;
+    list_read(lambda, LAMBDA_FILE);
+    ifstream ifs;
+    ifs.open(BX_FILE);
+    if(ifs.fail()) {
+        // check whether bx.list exists
+        ifs.close();
+    } else {
+        ifs.close();
+        list_read(bx, BX_FILE);
+    }
+    for(int k = bx.size(); k<lambda.size(); k++ ) {
+        bx.push_back(compute_bx(lambda[k]));
+    }
+    list_write(bx, BX_FILE);
+    return;
+}

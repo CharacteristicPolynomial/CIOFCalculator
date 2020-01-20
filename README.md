@@ -5,6 +5,25 @@ The goal of this project is to create a framework in which the parameters of a g
 
 The focus of this project is on calculating HyperLogLog. We choose to use *GNU Multiple Precision Arithmetic Library* to do calculations. The calculation is using rationals with infinite precision to gurantee the correctness of the results.
 
+## Analysis
+It is necessary to have an estimate on the run time to schedule reasonable experiments.
+
+There are four parameters.
+
+| parameter | meaning |
+| --- | --- |
+| s | interested interval lowerbound |
+| t | interested interval lowerbound |
+| m | number of independent copies |
+| n | number of states in a single bucket |
+
+ The largest lambda is 1-1/2^n/m, which requires O(n +log m) bits. Each time we do an addition, we are adding O( log(m) + n) bits to the denominator and O(n) to the nominator. Thus each ax and bx value needs about O(t (log t + n + log(m))^2 t^2 log t), which is about O(t^3 log^3 t). 
+
+The number of entries in one guess is 2^m and there are n^m guesses. 
+
+Therefore the total run time is O(n^m+n^m2^m)=O((2n)^m).
+
+
 ## Design
 ### List of Values
 Since this project involves some extensive computations, it is essential to use files to stage the computations. Each list file starts with some english and after an "=" symbol the list starts. The list files have a suffix ".list".
