@@ -23,7 +23,6 @@ def visualize_gis(gis):
     c[:,3] = 0.7
     bottom = np.zeros_like(top)
     width = depth = 0.7
-    print(x.shape, y.shape, bottom.shape, top.shape)
     ax.bar3d(x, y, bottom, width, depth, top, shade=True, color = c)
 
     # _x = np.arange(n)
