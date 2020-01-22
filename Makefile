@@ -1,8 +1,16 @@
-test: test.cpp list.h config.h compute.h
-	g++ test.cpp -o test -lgmp -pthread
+all: gen compute estimate hyper
 
-minimal: minimal.cpp
-	g++ minimal.cpp -std=c++11 -I/usr/include/python2.7 -lpython2.7
+gen: genLambda.cpp list.h config.h
+	g++ genLambda.cpp -o gen
+
+compute: compute.cpp list.h config.h compute.h
+	g++ compute.cpp -o compute -lgmp -pthread
+
+estimate: estimate.cpp list.h config.h
+	g++ estimate.cpp -o estimate
+
+hyper: hyper.cpp list.h config.h
+	g++ hyper.cpp -o hyper
 
 clean:
-	rm out test minimal a.out
+	rm compute estimate gen hyper

@@ -15,13 +15,6 @@ void list_read(vector<double>& vec, const char* filename) {
     }
     char temp=0;
     vec.clear();
-    while(temp != '=') {
-        if(ifs.eof()) {
-            ifs.close();
-            return;
-        }
-        temp = ifs.get();
-    }
     double tempd=0;
     while(ifs >> tempd) {
         vec.push_back(tempd);
@@ -30,34 +23,12 @@ void list_read(vector<double>& vec, const char* filename) {
     return;
 }
 
-void list_write(const vector<double>& vec, const char* filename) {
-    ifstream ifs;
-    ifs.open(filename);
-    string str;
-    if(!ifs.fail()) {
-        // if the output file already exists
-        // then we will save the comments
-        char temp=0;
-        while(temp != '=') {
-            if(ifs.eof()) {
-                str += '\n';
-                str += '=';
-                break;
-            }
-            temp = ifs.get();
-            str += temp;
-        }
-    } else {
-        str += '\n';
-        str += '=';
-    }
-    ifs.close();
-    
+void list_write(const vector<double>& vec, const char* filename) {    
     ofstream ofs;
-    ofs.open(filename, ios_base::trunc);
-    ofs << str << endl;
+    ofs.open(filename);
+    ofs.precision(12);
     for(auto& d : vec) {
-        ofs << d << '\n';
+        ofs << fixed << d << '\n';
     }
     ofs.close();
     return;

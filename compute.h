@@ -14,8 +14,8 @@ bool stopQ;
 void report_n(string title) {
     while(stopQ == 0) {
         this_thread::sleep_for(chrono::seconds(1));
-        cout << "(calculating: " << current_n << " | " << (double) current_n/ PARAMETER_T  * 100.0 << "\%)            \r" ;
-        cout << title << flush;
+        cout << title;
+        cout << "(calculating: " << current_n << " | " << (double) current_n/ PARAMETER_T  * 100.0 << "\%)            \r"  << flush;
     }
 }
 
@@ -43,7 +43,7 @@ double compute_ax(double x) {
     string title = "a(" + to_string(x) + ") = ";
     current_n = 0;
     stopQ = 0;
-    thread th(report_n, title);
+    // thread th(report_n, title);
     for(long n = PARAMETER_S; n <= PARAMETER_T; n++) {
         current_n = n;
         mpq_mul(n2q, nq, nq); // n^2
@@ -54,12 +54,11 @@ double compute_ax(double x) {
         mpq_mul(xnq, xnq, xq); // x^n
     }
     stopQ = 1;
-    th.join();
+    // th.join();
 
     double ax;
     ax = mpq_get_d(sq);
     mpq_clears(sq, xq,xnq,nq,n2q,enq,oneq,NULL);
-    cout << ax << WHITESPACE << endl;
     return ax;
 }
 
@@ -86,7 +85,7 @@ double compute_bx(double x) {
     string title = "b(" + to_string(x) + ") = ";
     current_n = 0;
     stopQ = 0;
-    thread th(report_n, title);
+    // thread th(report_n, title);
     for(long n = PARAMETER_S; n <= PARAMETER_T; n++) {
         current_n = n;
         mpq_div(enq, xnq, nq); // x^n/n
@@ -96,12 +95,11 @@ double compute_bx(double x) {
         mpq_mul(xnq, xnq, xq); // x^n
     }
     stopQ = 1;
-    th.join();
+    // th.join();
 
     double bx;
     bx = mpq_get_d(sq);
     mpq_clears(sq, xq,xnq,nq,enq,oneq,NULL);
-    cout << bx << WHITESPACE << endl;
     return bx;
 }
 
@@ -109,21 +107,15 @@ void compute_axlist() {
     vector<double> lambda;
     vector<double> ax;
     list_read(lambda, LAMBDA_FILE);
-    ifstream ifs;
-    ifs.open(AX_FILE);
-    if(ifs.fail()) {
-        // check whether ax.list exists
-        ifs.close();
-    } else {
-        ifs.close();
-        list_read(ax, AX_FILE);
-    }
+    cout << "calculating ax list" << endl;
     for(int k = ax.size(); k<lambda.size(); k++ ) {
         // cout << k << endl;
         // cout << lambda[k] << endl;
         ax.push_back(compute_ax(lambda[k]));
+        cout << "\r" << k << "\t\t(" << (double)k/lambda.size()*100.0 << "\%)" << WHITESPACE << flush;
     }
     list_write(ax, AX_FILE);
+    cout << "ax list completed" << WHITESPACE << endl;
     return;
 }
 
@@ -131,18 +123,12 @@ void compute_bxlist() {
     vector<double> lambda;
     vector<double> bx;
     list_read(lambda, LAMBDA_FILE);
-    ifstream ifs;
-    ifs.open(BX_FILE);
-    if(ifs.fail()) {
-        // check whether bx.list exists
-        ifs.close();
-    } else {
-        ifs.close();
-        list_read(bx, BX_FILE);
-    }
+    cout << "calculating bx list" << endl;
     for(int k = bx.size(); k<lambda.size(); k++ ) {
         bx.push_back(compute_bx(lambda[k]));
+        cout << "\r" << k << "\t\t(" << (double)k/lambda.size()*100.0 << "\%)" << WHITESPACE << flush;
     }
     list_write(bx, BX_FILE);
+    cout << "bx list completed" << WHITESPACE << endl;
     return;
 }
